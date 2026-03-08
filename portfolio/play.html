@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Play — GameGarage</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+    <!-- Desktop view -->
+    <div class="play-page">
+        <div class="play-header">
+            <a href="index.html" class="btn btn-outline">Home</a>
+        </div>
+        <div class="phone-frame">
+            <iframe id="game-frame-desktop"></iframe>
+        </div>
+    </div>
+
+    <!-- Mobile view -->
+    <a href="index.html" class="mobile-home-btn">Home</a>
+    <div class="mobile-frame">
+        <iframe id="game-frame-mobile"></iframe>
+    </div>
+
+    <script>
+        const games = {
+            'guess-the-number': '../01-guess-the-number/index.html'
+        };
+
+        const params = new URLSearchParams(window.location.search);
+        const gameId = params.get('game');
+        const gameSrc = games[gameId];
+
+        if (gameSrc) {
+            document.getElementById('game-frame-desktop').src = gameSrc;
+            document.getElementById('game-frame-mobile').src = gameSrc;
+            document.title = 'Play — GameGarage';
+        } else {
+            document.querySelector('.play-page').innerHTML =
+                '<div class="page-content" style="text-align:center;">' +
+                '<h2>Game not found</h2>' +
+                '<p>This game doesn\'t exist yet.</p>' +
+                '<a href="index.html" class="btn btn-outline">Back to Home</a>' +
+                '</div>';
+        }
+    </script>
+
+</body>
+</html>
