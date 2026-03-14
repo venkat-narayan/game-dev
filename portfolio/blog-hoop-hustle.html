@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Game 2: Hoop Hustle — GameGarage Blog</title>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+        .blog-post {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+
+        .blog-post h1 {
+            font-size: 2rem;
+            color: #00ccff;
+            margin-bottom: 8px;
+            text-shadow: 0 0 15px rgba(0, 204, 255, 0.3);
+        }
+
+        .blog-post .meta {
+            color: #555577;
+            font-size: 0.85rem;
+            margin-bottom: 40px;
+        }
+
+        .blog-post h2 {
+            font-size: 1.3rem;
+            color: #ff00ff;
+            margin-top: 40px;
+            margin-bottom: 16px;
+            text-shadow: 0 0 8px rgba(255, 0, 255, 0.2);
+        }
+
+        .blog-post p {
+            color: #aaaacc;
+            line-height: 1.8;
+            margin-bottom: 16px;
+        }
+
+        .blog-post strong {
+            color: #e0e0f0;
+        }
+
+        .blog-post code {
+            background: #12121f;
+            color: #00ccff;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .blog-post pre {
+            background: #12121f;
+            border: 1px solid #1a1a2e;
+            border-radius: 8px;
+            padding: 20px;
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+
+        .blog-post pre code {
+            background: none;
+            padding: 0;
+            color: #aaaacc;
+        }
+
+        .blog-post ul, .blog-post ol {
+            color: #aaaacc;
+            line-height: 1.8;
+            margin-bottom: 16px;
+            padding-left: 24px;
+        }
+
+        .blog-post li {
+            margin-bottom: 6px;
+        }
+
+        .blog-post .highlight {
+            background: #12121f;
+            border-left: 3px solid #ff00ff;
+            padding: 16px 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .blog-post .highlight p {
+            margin-bottom: 0;
+        }
+
+        .blog-post .play-link {
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: #7777aa;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+
+        .back-link:hover {
+            color: #00ccff;
+        }
+
+        .blog-post table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .blog-post th {
+            color: #ff00ff;
+            text-align: left;
+            padding: 10px 12px;
+            border-bottom: 2px solid #1a1a2e;
+            font-size: 0.9rem;
+        }
+
+        .blog-post td {
+            color: #aaaacc;
+            padding: 10px 12px;
+            border-bottom: 1px solid #1a1a2e;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="index.html" class="nav-brand">Game<span>Garage</span></a>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="blog.html" class="active">Blog</a></li>
+            <li><a href="feedback.html">Feedback</a></li>
+        </ul>
+    </nav>
+
+    <article class="blog-post">
+        <a href="blog.html" class="back-link">&larr; Back to Blog</a>
+        <h1>Game 2 — What I Learned Building "Hoop Hustle"</h1>
+        <div class="meta">March 2026 &middot; From static clicks to real-time physics</div>
+
+        <div class="play-link">
+            <a href="play.html?game=hoop-hustle" class="btn">Play the Game</a>
+        </div>
+
+        <h2>The Idea</h2>
+        <p>
+            Basketballs fall from the sky. You move a hoop left and right to catch them.
+            Bombs fall too — catch one and you lose a life. Survive 60 seconds and you
+            advance to the next round, where everything gets faster.
+        </p>
+        <p>
+            Simple on paper. But building this meant jumping from static button clicks
+            to <strong>real-time physics</strong> — gravity, velocity, collision detection,
+            and a game loop running 60 times per second. Game 1 was a conversation.
+            This game is a simulation.
+        </p>
+
+        <h2>Arcade Physics — Things That Fall</h2>
+        <p>
+            Game 1 had no physics engine. Nothing moved on its own — the player clicked,
+            and the game responded. In Hoop Hustle, objects fall automatically. Phaser's
+            <strong>Arcade Physics</strong> handles this with a single config:
+        </p>
+        <pre><code>physics: {
+    default: 'arcade',
+    arcade: {
+        gravity: { y: 300 },  // Pull everything downward
+        debug: false
+    }
+}</code></pre>
+        <p>
+            The key insight: <strong>gravity is acceleration, not speed</strong>. At <code>y: 300</code>,
+            objects gain 300 pixels/second <em>every second</em>. They start slow and get faster —
+            that natural "falling" feel comes from the math, not from manual animation.
+        </p>
+        <p>
+            But not everything should fall. The basket stays at the bottom. The score text
+            floats in place. You choose which objects participate in physics:
+        </p>
+        <pre><code>// This object falls (gravity ON by default)
+this.physics.add.existing(ball);
+
+// This object stays put
+basket.body.setAllowGravity(false);</code></pre>
+
+        <div class="highlight">
+            <p><strong>Takeaway:</strong> A physics engine isn't all-or-nothing. You decide
+            which objects live in the physics world and which are just pictures on screen.</p>
+        </div>
+
+        <h2>Physics Groups — Managing the Swarm</h2>
+        <p>
+            When you spawn a new basketball every 1.5 seconds, you quickly have dozens
+            of them falling at once. Checking each one individually against the basket
+            would be tedious. Phaser's <strong>Physics Groups</strong> solve this:
+        </p>
+        <pre><code>// Create a group for all basketballs
+this.balls = this.physics.add.group();
+
+// Spawn a ball into the group
+const ball = this.add.sprite(x, 0, 'basketball');
+this.balls.add(ball);
+
+// Check ALL balls against the basket in one line
+this.physics.add.overlap(
+    this.basket, this.balls, this.catchBall, null, this
+);</code></pre>
+        <p>
+            I kept balls and bombs in <strong>separate groups</strong>. They look similar —
+            both are falling circles — but they trigger completely different logic.
+            Catching a ball means +10 points. Catching a bomb means losing a life.
+            One overlap rule per group keeps the code clean:
+        </p>
+        <pre><code>// Two groups, two rules, two callbacks
+this.physics.add.overlap(basket, this.balls, this.catchBall, null, this);
+this.physics.add.overlap(basket, this.bombs, this.hitBomb, null, this);</code></pre>
+
+        <h2>The Invisible Problem — Memory Leaks</h2>
+        <p>
+            This was the most eye-opening lesson. Once a ball falls past the bottom
+            of the screen, the player can't see it. But the computer still tracks it.
+            The physics engine still calculates its position, velocity, and potential
+            collisions — every single frame.
+        </p>
+        <p>
+            After 2 minutes of gameplay, there could be 80+ invisible objects being
+            processed 60 times per second. In a simple game, that's fine. In a bullet-hell
+            with thousands of projectiles? Lag, stutter, crash.
+        </p>
+        <pre><code>// In update() — runs every frame
+this.balls.getChildren().forEach(ball => {
+    if (ball.y > 660) {
+        ball.destroy();  // Gone from memory
+    }
+});</code></pre>
+
+        <div class="highlight">
+            <p><strong>Takeaway:</strong> What the player can't see, the game shouldn't
+            be tracking. Always clean up objects that leave the screen.</p>
+        </div>
+
+        <h2>Spawning and Timed Events</h2>
+        <p>
+            Games need things to happen on a schedule. Phaser's <code>time.addEvent()</code>
+            lets you say "do this every N milliseconds, forever":
+        </p>
+        <pre><code>// Spawn a ball every 1.5 seconds
+this.time.addEvent({
+    delay: 1500,
+    callback: this.spawnBall,
+    callbackScope: this,
+    loop: true
+});</code></pre>
+        <p>
+            For bombs, I wanted a 10-second safe period before they start appearing —
+            giving the player time to get comfortable. I used <code>delayedCall</code>
+            to wait, then started the bomb spawner inside the callback:
+        </p>
+        <pre><code>// Wait 10 seconds, THEN start spawning bombs
+this.time.delayedCall(10000, () => {
+    this.time.addEvent({
+        delay: 3000,
+        callback: this.spawnBomb,
+        callbackScope: this,
+        loop: true
+    });
+});</code></pre>
+
+        <h2>The Round System — A Design Decision</h2>
+        <p>
+            Originally, difficulty increased gradually within a single 60-second round.
+            But I realized a <strong>round-based system</strong> feels better:
+            survive 60 seconds, see your stats, choose to continue or quit.
+        </p>
+        <p>
+            The first approach tried to handle round transitions inside GameScene —
+            show a "Round Complete!" message, wait 2 seconds, resume. But the physics
+            engine kept running in the background. Balls were still falling behind the
+            announcement text.
+        </p>
+        <p>
+            The fix: a dedicated <strong>PromoteScene</strong>. When a round ends,
+            GameScene fully stops and hands off to PromoteScene. No background physics,
+            no race conditions. The player sees their stats, previews the next round's
+            difficulty, and clicks when they're ready.
+        </p>
+        <pre><code>// GameScene → done with round
+this.scene.start('PromoteScene', {
+    score: this.score,
+    lives: this.lives,
+    round: this.round
+});
+
+// PromoteScene → player clicks "Next Round"
+this.scene.start('GameScene', {
+    score: score,
+    lives: lives,
+    round: nextRound   // State carries over
+});</code></pre>
+
+        <div class="highlight">
+            <p><strong>Takeaway:</strong> Each scene should do one job. If you're fighting
+            the physics engine to show a UI screen, you probably need a separate scene.</p>
+        </div>
+
+        <h2>Difficulty Scaling</h2>
+        <p>
+            Each round gets harder in three ways:
+        </p>
+        <ul>
+            <li><strong>Gravity increases</strong> — +150 per round (300 → 450 → 600...)</li>
+            <li><strong>Starting velocity increases</strong> — balls already moving when they spawn</li>
+            <li><strong>Bombs appear sooner</strong> — 10s delay → 5s → immediate</li>
+        </ul>
+        <p>
+            I initially only increased gravity, but the difference was subtle — gravity is
+            acceleration, so the speed difference only shows late in the fall. Adding an
+            <strong>initial velocity</strong> that scales per round made the difficulty jump
+            immediately noticeable:
+        </p>
+        <pre><code>ball.body.setVelocityY(50 + (this.round - 1) * 80);
+// Round 1: 50 px/s  → gentle start
+// Round 2: 130 px/s → noticeably faster
+// Round 3: 210 px/s → fast right away</code></pre>
+
+        <h2>The Architecture Refactor</h2>
+        <p>
+            By the time I had gameplay, visuals, UI, textures, and round logic working,
+            GameScene was ~280 lines doing too many jobs. I broke it apart:
+        </p>
+        <pre><code>02-catch-and-collect/
+  assets/
+    textures.js      ← all texture generation
+    background.js    ← gradient sky, clouds
+  objects/
+    Basketball.js    ← ball creation + physics
+    Bomb.js          ← bomb creation + physics
+    Basket.js        ← player movement + physics
+  utils/
+    ButtonHelper.js  ← reusable styled buttons
+    UIHelper.js      ← HUD, titles, labels
+  scenes/
+    MenuScene.js     ← start screen
+    GameScene.js     ← gameplay only (~120 lines)
+    PromoteScene.js  ← round transition
+    GameOverScene.js ← final results</code></pre>
+        <p>
+            After the refactor, GameScene dropped to ~120 lines of pure game logic. Each file
+            has one responsibility. Adding sounds or animations later means extending the
+            object classes — not bloating the main scene.
+        </p>
+
+        <div class="highlight">
+            <p><strong>Takeaway:</strong> Refactor when the code starts fighting you.
+            If you're scrolling past texture-drawing code to find your game logic,
+            it's time to separate concerns.</p>
+        </div>
+
+        <h2>Mistakes I Made</h2>
+        <ol>
+            <li>
+                <strong>Hardcoded screen boundaries</strong> — I wrote manual <code>if</code>
+                checks to keep the basket on screen, but the numbers were tied to the basket's
+                width. Changing the width broke the boundaries silently.
+                Fix: <code>setCollideWorldBounds(true)</code> — one line, handles any size.
+            </li>
+            <li>
+                <strong>Wrong text property</strong> — Used <code>fontWeight: 'bold'</code>
+                instead of <code>fontStyle: 'bold'</code>. Phaser silently ignored it.
+                No error, no warning, just text that wasn't bold.
+                Silent failures are the hardest bugs.
+            </li>
+            <li>
+                <strong>Double game-over trigger</strong> — Timer hitting zero and last life
+                lost could fire in the same frame. Fix: a simple <code>isGameOver</code>
+                boolean checked at the top of every method that could end the game.
+            </li>
+            <li>
+                <strong>Memory leak from off-screen objects</strong> — Balls fell past the
+                screen and lived forever in memory. Fix: destroy anything past <code>y > 660</code>
+                in the update loop.
+            </li>
+        </ol>
+
+        <h2>Game 1 vs. Game 2</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Aspect</th>
+                    <th>Guess the Number</th>
+                    <th>Hoop Hustle</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Interaction</td>
+                    <td>Click/type, wait</td>
+                    <td>Real-time, continuous</td>
+                </tr>
+                <tr>
+                    <td>Game Loop</td>
+                    <td>Not needed</td>
+                    <td>60 updates/second</td>
+                </tr>
+                <tr>
+                    <td>Physics</td>
+                    <td>None</td>
+                    <td>Gravity, velocity, collisions</td>
+                </tr>
+                <tr>
+                    <td>Objects</td>
+                    <td>Static text and buttons</td>
+                    <td>Dynamic spawning entities</td>
+                </tr>
+                <tr>
+                    <td>Architecture</td>
+                    <td>3 scenes, ~50 lines each</td>
+                    <td>4 scenes + assets + objects + utils</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>What I'd Do Differently</h2>
+        <p>
+            I'd create a <strong>global theme config</strong> from the start. I kept typing
+            hex codes like <code>0xFF8C00</code> and <code>0xFFA500</code> throughout the codebase.
+            A single <code>theme.js</code> file with named colors — <code>BASKETBALL_ORANGE</code>,
+            <code>BOMB_DARK</code>, <code>SKY_BLUE</code> — would make the code more readable
+            and make it trivial to reskin the game later.
+        </p>
+        <p>
+            I'd also use the framework's built-in features earlier. Every time I wrote custom logic,
+            Phaser already had a cleaner one-liner. Check the docs first, code second.
+        </p>
+
+        <h2>What's Next</h2>
+        <p>
+            The foundation is solid and the architecture is ready to scale. Next steps:
+            <strong>sound effects</strong> (catch swoosh, bomb explosion, background music),
+            <strong>animations</strong> (ball spin, screen shake on bomb hit),
+            and <strong>mobile touch controls</strong>. Time to make it <em>feel</em> like a real game.
+        </p>
+
+        <div class="play-link">
+            <a href="play.html?game=hoop-hustle" class="btn">Play Hoop Hustle</a>
+        </div>
+    </article>
+
+    <footer>
+        <p>Built with Phaser.js 3 — A game dev learning journey</p>
+    </footer>
+
+</body>
+</html>
